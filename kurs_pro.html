@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kurs Pro — Premium Valyuta Konvertori</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --blue:#4f8cff; --purple:#9b6bff; --cyan:#37e6e6;
+  --grad: linear-gradient(135deg, var(--blue), var(--purple) 55%, var(--cyan));
+  --bg:#05060a; --bg2:#0a0c14;
+  --glass: rgba(255,255,255,0.055);
+  --glass-brd: rgba(255,255,255,0.10);
+  --glass-hi: rgba(255,255,255,0.09);
+  --text:#f2f3f8; --text-dim:#8b93a7; --text-dim2:#5c6479;
+  --green:#3ee68a; --red:#ff5d6c;
+  --font-d:'Sora',sans-serif; --font-b:'Inter',sans-serif; --font-m:'JetBrains Mono',monospace;
+  --radius:20px; --radius-sm:12px;
+  color-scheme: dark;
+}
+[data-theme="light"]{
+  --bg:#eef0f6; --bg2:#e4e7f0;
+  --glass: rgba(255,255,255,0.55);
+  --glass-brd: rgba(20,20,40,0.08);
+  --glass-hi: rgba(255,255,255,0.75);
+  --text:#14161f; --text-dim:#565d72; --text-dim2:#868da3;
+  color-scheme: light;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(79,140,255,0.16), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(155,107,255,0.14), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(55,230,230,0.08), transparent 50%),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--font-b);
+  transition: background 0.4s ease, color 0.4s ease;
+  padding-bottom:80px;
+  overflow-x:hidden;
+}
+a{color:inherit}
+button{font-family:inherit; cursor:pointer;}
+::selection{ background: var(--purple); color:#fff; }
+
+/* ---------- glass utility ---------- */
+.glass{
+  background:var(--glass);
+  border:1px solid var(--glass-brd);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border-radius:var(--radius);
+}
+
+/* ---------- navbar ---------- */
+nav{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px;
+  background:var(--glass);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom:1px solid var(--glass-brd);
+}
+.logo{
+  font-family:var(--font-d); font-weight:800; font-size:20px;
+  display:flex; align-items:center; gap:8px;
+}
+.logo .dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--grad);
+  box-shadow:0 0 12px var(--cyan);
+}
+.nav-actions{ display:flex; align-items:center; gap:8px; }
+.pill-btn{
+  display:flex; align-items:center; gap:6px;
+  padding:8px 12px; border-radius:100px;
+  background:var(--glass-hi); border:1px solid var(--glass-brd);
+  color:var(--text); font-size:13px; font-weight:500;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.pill-btn:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(79,140,255,0.18); }
+.pill-btn:active{ transform:translateY(0); }
+.lang-select{
+  background:var(--glass-hi); border:1px solid var(--glass-brd); color:var(--text);
+  border-radius:100px; padding:8px 12px; font-size:13px; font-family:inherit; outline:none;
+}
+
+/* ---------- hero ---------- */
+.hero{ text-align:center; padding:56px 20px 32px; }
+.hero h1{
+  font-family:var(--font-d); font-weight:800;
+  font-size:clamp(28px, 5vw, 46px);
+  background:var(--grad);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  letter-spacing:-0.02em;
+}
+.hero p{ color:var(--text-dim); margin-top:10px; font-size:15px; }
+
+.wrap{ max-width:1080px; margin:0 auto; padding:0 20px; }
+
+/* ---------- ticker ---------- */
+.ticker-outer{
+  max-width:1080px; margin:0 auto 32px; overflow:hidden; position:relative;
+  border-radius:100px;
+}
+.ticker-outer::before, .ticker-outer::after{
+  content:''; position:absolute; top:0; bottom:0; width:60px; z-index:2;
+}
+.ticker-outer::before{ left:0; background:linear-gradient(90deg, var(--bg2), transparent); }
+.ticker-outer::after{ right:0; background:linear-gradient(270deg, var(--bg2), transparent); }
+.ticker{ display:flex; white-space:nowrap; animation:scroll 32s linear infinite; padding:12px 0; }
+.ticker-outer:hover .ticker{ animation-play-state: paused; }
+.ticker span{
+  padding:0 20px; font-family:var(--font-m); font-size:12.5px; color:var(--text-dim);
+  border-right:1px solid var(--glass-brd); display:flex; align-items:center; gap:6px;
+}
+.ticker b{ color:var(--text); font-weight:600; }
+.ticker .up{ color:var(--green); }
+.ticker .down{ color:var(--red); }
+@keyframes scroll{ 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+
+/* ---------- converter card ---------- */
+.converter{
+  padding:28px; margin-bottom:28px;
+  position:relative;
+}
+.conv-grid{
+  display:grid; grid-template-columns:1fr auto 1fr; gap:18px; align-items:stretch;
+}
+.field{
+  background:var(--glass-hi); border:1px solid var(--glass-brd); border-radius:var(--radius-sm);
+  padding:18px 18px; display:flex; flex-direction:column; gap:12px;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.field:focus-within{ box-shadow:0 0 0 3px rgba(79,140,255,0.25); border-color:var(--blue); }
+.field label{ font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim2); }
+.amount-row{ display:flex; align-items:center; gap:10px; }
+.amount-row input{
+  flex:1; min-width:0; background:transparent; border:none; outline:none;
+  color:var(--text); font-family:var(--font-m); font-size:26px; font-weight:500;
+}
+.cur-select{
+  position:relative;
+}
+.cur-btn{
+  display:flex; align-items:center; gap:8px;
+  background:var(--glass); border:1px solid var(--glass-brd); border-radius:100px;
+  padding:8px 12px; font-size:13.5px; font-weight:600; white-space:nowrap;
+  color:var(--text);
+}
+.cur-btn .flag{ font-size:16px; }
+.cur-btn .chev{ color:var(--text-dim); font-size:10px; margin-left:2px; }
+
+.dropdown{
+  position:absolute; top:calc(100% + 8px); right:0; width:280px; max-height:340px;
+  overflow:hidden; z-index:40; display:none; flex-direction:column;
+  padding:10px; box-shadow:0 20px 60px rgba(0,0,0,0.45);
+}
+.dropdown.open{ display:flex; animation: pop 0.18s ease; }
+@keyframes pop{ from{opacity:0; transform:translateY(-6px) scale(0.98);} to{opacity:1; transform:none;} }
+.dropdown input{
+  background:var(--glass-hi); border:1px solid var(--glass-brd); border-radius:10px;
+  padding:9px 12px; color:var(--text); font-family:inherit; font-size:13px; outline:none; margin-bottom:8px;
+}
+.dropdown .list{ overflow-y:auto; }
+.dd-item{
+  display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:10px;
+  font-size:13px; color:var(--text);
+}
+.dd-item:hover{ background:var(--glass-hi); }
+.dd-item .flag{ font-size:18px; }
+.dd-item .name{ flex:1; color:var(--text-dim); font-size:11.5px; }
+.dd-item .code{ font-weight:700; font-family:var(--font-m); }
+.dd-item .star{ color:var(--text-dim2); font-size:14px; padding:2px; }
+.dd-item .star.active{ color:#ffd23e; }
+
+.swap-col{ display:flex; align-items:center; justify-content:center; }
+.swap-btn{
+  width:48px; height:48px; border-radius:50%;
+  background:var(--grad); border:none; color:#fff; font-size:19px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 24px rgba(79,140,255,0.35);
+  transition: transform 0.4s cubic-bezier(.2,.9,.3,1);
+}
+.swap-btn.spin{ transform: rotate(180deg); }
+.swap-btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+
+/* rate readout */
+.rate-line{
+  margin-top:22px; padding-top:20px; border-top:1px dashed var(--glass-brd);
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;
+}
+.rate-main{ font-family:var(--font-m); font-size:16px; color:var(--text); }
+.rate-main b{ background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.rate-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.icon-btn{
+  width:36px; height:36px; border-radius:10px;
+  background:var(--glass-hi); border:1px solid var(--glass-brd); color:var(--text);
+  display:flex; align-items:center; justify-content:center; font-size:15px;
+  transition: transform 0.15s ease;
+}
+.icon-btn:hover{ transform:translateY(-2px); }
+
+.status-line{ margin-top:10px; font-size:11.5px; color:var(--text-dim2); min-height:16px; }
+.status-line.err{ color:var(--red); }
+
+/* ---------- quick popular ---------- */
+.section-title{
+  font-family:var(--font-d); font-weight:700; font-size:19px; margin:38px 0 14px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-title .bar{ width:4px; height:16px; border-radius:4px; background:var(--grad); }
+.popular-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px;
+}
+.pop-card{
+  padding:16px; display:flex; flex-direction:column; gap:6px; cursor:pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.pop-card:hover{ transform:translateY(-3px); border-color:var(--blue); }
+.pop-top{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-m); font-size:12.5px; color:var(--text-dim); }
+.pop-val{ font-family:var(--font-m); font-size:19px; font-weight:600; }
+.pop-trend{ font-size:11.5px; }
+.pop-trend.up{ color:var(--green); }
+.pop-trend.down{ color:var(--red); }
+
+/* ---------- chart ---------- */
+.chart-card{ padding:24px; margin-top:38px; }
+.chart-head{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+.range-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+.range-tab{
+  padding:7px 13px; border-radius:100px; font-size:12.5px; font-weight:600;
+  background:var(--glass-hi); border:1px solid var(--glass-brd); color:var(--text-dim);
+}
+.range-tab.active{ background:var(--grad); color:#fff; border-color:transparent; }
+.chart-wrap{ height:280px; position:relative; }
+
+/* ---------- calculator FAB + modal ---------- */
+.fab{
+  position:fixed; bottom:26px; right:26px; z-index:60;
+  width:58px; height:58px; border-radius:50%;
+  background:var(--grad); border:none; color:#fff; font-size:22px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 30px rgba(79,140,255,0.4);
+  transition: transform 0.2s ease;
+}
+.fab:hover{ transform:scale(1.08) rotate(8deg); }
+
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  z-index:70; display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.open{ display:flex; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+.calc-modal{ width:100%; max-width:300px; padding:20px; }
+.calc-display{
+  background:var(--glass-hi); border-radius:var(--radius-sm); padding:16px;
+  text-align:right; font-family:var(--font-m); font-size:26px; margin-bottom:12px; word-break:break-all;
+  border:1px solid var(--glass-brd);
+}
+.calc-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.calc-btn{
+  padding:14px 0; border-radius:12px; background:var(--glass-hi); border:1px solid var(--glass-brd);
+  color:var(--text); font-size:16px; font-weight:600;
+  transition: background 0.15s ease;
+}
+.calc-btn:hover{ background:var(--glass); }
+.calc-btn.op{ color:var(--cyan); }
+.calc-btn.eq{ background:var(--grad); color:#fff; grid-column:span 2; }
+.calc-close{ display:flex; justify-content:flex-end; margin-bottom:8px; }
+.calc-close button{ background:none; border:none; color:var(--text-dim); font-size:20px; }
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+  padding:12px 20px; border-radius:100px; font-size:13.5px; z-index:80;
+  opacity:0; pointer-events:none; transition: all 0.3s ease;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+footer{
+  max-width:1080px; margin:60px auto 0; padding:20px; text-align:center;
+  color:var(--text-dim2); font-size:12px; border-top:1px solid var(--glass-brd);
+}
+
+@media (max-width:720px){
+  .conv-grid{ grid-template-columns:1fr; }
+  .swap-col{ transform:rotate(90deg); margin:-4px auto; }
+  .dropdown{ width:240px; right:auto; left:0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .ticker{ animation:none; } .swap-btn, .pop-card, .fab{ transition:none; }
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<nav>
+  <div class="logo"><span class="dot"></span><span data-i="brand">Kurs Pro</span></div>
+  <div class="nav-actions">
+    <select class="lang-select" id="langSelect" aria-label="Til">
+      <option value="uz">UZ</option>
+      <option value="ru">RU</option>
+      <option value="en">EN</option>
+    </select>
+    <button class="pill-btn" id="themeBtn"><span id="themeIcon">🌙</span> <span data-i="theme">Tema</span></button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1 data-i="heroTitle">Dunyo valyutalari — bir joyda</h1>
+  <p data-i="heroSub">Jonli kurslar, tarixiy grafiklar va aqlli konvertor</p>
+</div>
+
+<div class="ticker-outer glass">
+  <div class="ticker" id="ticker"></div>
+</div>
+
+<div class="wrap">
+
+  <div class="converter glass">
+    <div class="conv-grid">
+      <div class="field">
+        <label data-i="youSend">Yuborasiz</label>
+        <div class="amount-row">
+          <input type="text" inputmode="decimal" id="amountFrom" value="100" aria-label="Summa">
+          <div class="cur-select" id="ddFromWrap">
+            <button class="cur-btn" id="btnFrom" type="button"></button>
+            <div class="dropdown glass" id="ddFrom">
+              <input type="text" placeholder="Qidirish..." id="searchFrom">
+              <div class="list" id="listFrom"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="swap-col">
+        <button class="swap-btn" id="swapBtn" aria-label="Almashtirish" title="Almashtirish">⇄</button>
+      </div>
+
+      <div class="field">
+        <label data-i="youGet">Olasiz</label>
+        <div class="amount-row">
+          <input type="text" id="amountTo" value="0" readonly aria-label="Natija">
+          <div class="cur-select" id="ddToWrap">
+            <button class="cur-btn" id="btnTo" type="button"></button>
+            <div class="dropdown glass" id="ddTo">
+              <input type="text" placeholder="Qidirish..." id="searchTo">
+              <div class="list" id="listTo"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rate-line">
+      <div class="rate-main" id="rateMain">—</div>
+      <div class="rate-actions">
+        <button class="icon-btn" id="copyBtn" title="Nusxalash">📋</button>
+        <button class="icon-btn" id="shareBtn" title="Ulashish">🔗</button>
+        <button class="icon-btn" id="calcOpenBtn" title="Kalkulyator">🧮</button>
+      </div>
+    </div>
+    <div class="status-line" id="statusLine" data-i="loading">Yuklanmoqda…</div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span><span data-i="popularTitle">Mashhur konvertatsiyalar</span></div>
+  <div class="popular-grid" id="popularGrid"></div>
+
+  <div class="chart-card glass">
+    <div class="chart-head">
+      <div class="section-title" style="margin:0"><span class="bar"></span><span data-i="chartTitle">Tarixiy dinamika</span></div>
+      <div class="range-tabs" id="rangeTabs"></div>
+    </div>
+    <div class="chart-wrap"><canvas id="rateChart"></canvas></div>
+  </div>
+
+</div>
+
+<button class="fab" id="fabCalc" title="Kalkulyator">🧮</button>
+
+<div class="modal-overlay" id="calcOverlay">
+  <div class="calc-modal glass">
+    <div class="calc-close"><button id="calcClose">✕</button></div>
+    <div class="calc-display" id="calcDisplay">0</div>
+    <div class="calc-grid" id="calcGrid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <span data-i="footerText">Manba: exchangerate-api / Frankfurter (ECB) · Faqat maʼlumot uchun, moliyaviy maslahat emas</span>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= i18n ================= */
+const I18N = {
+  uz:{ brand:"Kurs Pro", theme:"Tema", heroTitle:"Dunyo valyutalari — bir joyda", heroSub:"Jonli kurslar, tarixiy grafiklar va aqlli konvertor",
+       youSend:"Yuborasiz", youGet:"Olasiz", loading:"Yuklanmoqda…", popularTitle:"Mashhur konvertatsiyalar", chartTitle:"Tarixiy dinamika",
+       footerText:"Manba: exchangerate-api / Frankfurter (ECB) · Faqat maʼlumot uchun, moliyaviy maslahat emas",
+       search:"Qidirish...", copied:"Nusxalandi!", shareFail:"Ulashib bo'lmadi", noHistory:"Bu juftlik uchun tarixiy maʼlumot mavjud emas",
+       rateErr:"Kurslarni olishda xatolik. Internetni tekshiring.", updated:"Yangilandi" },
+  ru:{ brand:"Kurs Pro", theme:"Тема", heroTitle:"Валюты всего мира — в одном месте", heroSub:"Курсы в реальном времени, графики и умный конвертер",
+       youSend:"Отправляете", youGet:"Получаете", loading:"Загрузка…", popularTitle:"Популярные конвертации", chartTitle:"История курса",
+       footerText:"Источник: exchangerate-api / Frankfurter (ECB) · Только для информации, не финансовый совет",
+       search:"Поиск...", copied:"Скопировано!", shareFail:"Не удалось поделиться", noHistory:"Нет исторических данных для этой пары",
+       rateErr:"Ошибка загрузки курсов. Проверьте интернет.", updated:"Обновлено" },
+  en:{ brand:"Kurs Pro", theme:"Theme", heroTitle:"Every currency, in one place", heroSub:"Live rates, historical charts, and a smart converter",
+       youSend:"You send", youGet:"You get", loading:"Loading…", popularTitle:"Popular conversions", chartTitle:"Historical trend",
+       footerText:"Source: exchangerate-api / Frankfurter (ECB) · For information only, not financial advice",
+       search:"Search...", copied:"Copied!", shareFail:"Could not share", noHistory:"No historical data for this pair",
+       rateErr:"Error loading rates. Check your connection.", updated:"Updated" }
+};
+let LANG = 'uz';
+function t(key){ return (I18N[LANG] && I18N[LANG][key]) || I18N.uz[key] || key; }
+function applyI18n(){
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    el.textContent = t(el.getAttribute('data-i'));
+  });
+  document.getElementById('searchFrom').placeholder = t('search');
+  document.getElementById('searchTo').placeholder = t('search');
+  document.documentElement.lang = LANG;
+}
+
+/* ================= currency data ================= */
+// code -> [flag, name_uz, name_ru, name_en, symbol]
+const CUR = {
+  USD:["🇺🇸","AQSH dollari","Доллар США","US Dollar","$"],
+  EUR:["🇪🇺","Yevro","Евро","Euro","€"],
+  GBP:["🇬🇧","Angliya funti","Фунт стерлингов","British Pound","£"],
+  JPY:["🇯🇵","Yaponiya yenasi","Японская иена","Japanese Yen","¥"],
+  CNY:["🇨🇳","Xitoy yuani","Китайский юань","Chinese Yuan","¥"],
+  CHF:["🇨🇭","Shveytsariya franki","Швейцарский франк","Swiss Franc","Fr"],
+  RUB:["🇷🇺","Rossiya rubli","Российский рубль","Russian Ruble","₽"],
+  TRY:["🇹🇷","Turkiya lirasi","Турецкая лира","Turkish Lira","₺"],
+  INR:["🇮🇳","Hindiston rupiyasi","Индийская рупия","Indian Rupee","₹"],
+  AED:["🇦🇪","BAA dirhami","Дирхам ОАЭ","UAE Dirham","د.إ"],
+  SAR:["🇸🇦","Saudiya riyoli","Саудовский риял","Saudi Riyal","﷼"],
+  KZT:["🇰🇿","Qozogʻiston tengesi","Казахстанский тенге","Kazakh Tenge","₸"],
+  UZS:["🇺🇿","Oʻzbek soʻmi","Узбекский сум","Uzbek Som","soʻm"],
+  TJS:["🇹🇯","Tojik somonisi","Таджикский сомони","Tajik Somoni","SM"],
+  KGS:["🇰🇬","Qirgʻiz somi","Киргизский сом","Kyrgyz Som","с"],
+  AZN:["🇦🇿","Ozarbayjon manati","Азербайджанский манат","Azerbaijani Manat","₼"],
+  UAH:["🇺🇦","Ukraina grivnasi","Украинская гривна","Ukrainian Hryvnia","₴"],
+  PLN:["🇵🇱","Polsha zlotiysi","Польский злотый","Polish Zloty","zł"],
+  CZK:["🇨🇿","Chexiya kronasi","Чешская крона","Czech Koruna","Kč"],
+  SEK:["🇸🇪","Shvetsiya kronasi","Шведская крона","Swedish Krona","kr"],
+  NOK:["🇳🇴","Norvegiya kronasi","Норвежская крона","Norwegian Krone","kr"],
+  DKK:["🇩🇰","Daniya kronasi","Датская крона","Danish Krone","kr"],
+  CAD:["🇨🇦","Kanada dollari","Канадский доллар","Canadian Dollar","$"],
+  AUD:["🇦🇺","Avstraliya dollari","Австралийский доллар","Australian Dollar","$"],
+  NZD:["🇳🇿","Yangi Zelandiya dollari","Новозеландский доллар","New Zealand Dollar","$"],
+  HKD:["🇭🇰","Gonkong dollari","Гонконгский доллар","Hong Kong Dollar","$"],
+  SGD:["🇸🇬","Singapur dollari","Сингапурский доллар","Singapore Dollar","$"],
+  KRW:["🇰🇷","Janubiy Koreya voni","Южнокорейская вона","South Korean Won","₩"],
+  THB:["🇹🇭","Tailand bahti","Тайский бат","Thai Baht","฿"],
+  MYR:["🇲🇾","Malayziya ringgiti","Малайзийский ринггит","Malaysian Ringgit","RM"],
+  IDR:["🇮🇩","Indoneziya rupiyasi","Индонезийская рупия","Indonesian Rupiah","Rp"],
+  PHP:["🇵🇭","Filippin pesosi","Филиппинское песо","Philippine Peso","₱"],
+  VND:["🇻🇳","Vetnam dongi","Вьетнамский донг","Vietnamese Dong","₫"],
+  PKR:["🇵🇰","Pokiston rupiyasi","Пакистанская рупия","Pakistani Rupee","₨"],
+  BDT:["🇧🇩","Bangladesh takasi","Бангладешская така","Bangladeshi Taka","৳"],
+  EGP:["🇪🇬","Misr funti","Египетский фунт","Egyptian Pound","£"],
+  NGN:["🇳🇬","Nigeriya nayrasi","Нигерийская найра","Nigerian Naira","₦"],
+  ZAR:["🇿🇦","Janubiy Afrika rendi","Южноафриканский рэнд","South African Rand","R"],
+  BRL:["🇧🇷","Braziliya reali","Бразильский реал","Brazilian Real","R$"],
+  MXN:["🇲🇽","Meksika pesosi","Мексиканское песо","Mexican Peso","$"],
+  ARS:["🇦🇷","Argentina pesosi","Аргентинское песо","Argentine Peso","$"],
+  QAR:["🇶🇦","Qatar riyoli","Катарский риал","Qatari Riyal","﷼"],
+  KWD:["🇰🇼","Quvayt dinori","Кувейтский динар","Kuwaiti Dinar","د.ك"],
+  BHD:["🇧🇭","Bahrayn dinori","Бахрейнский динар","Bahraini Dinar",".د.ب"],
+  OMR:["🇴🇲","Ummon riyoli","Оманский риал","Omani Rial","﷼"],
+  ILS:["🇮🇱","Isroil shekeli","Израильский шекель","Israeli Shekel","₪"],
+  GEL:["🇬🇪","Gruziya larisi","Грузинский лари","Georgian Lari","₾"],
+  AMD:["🇦🇲","Armaniston dromi","Армянский драм","Armenian Dram","֏"],
+  BYN:["🇧🇾","Belarus rubli","Белорусский рубль","Belarusian Ruble","Br"],
+  MDL:["🇲🇩","Moldova leyi","Молдавский лей","Moldovan Leu","L"],
+  RON:["🇷🇴","Ruminiya leyi","Румынский лей","Romanian Leu","lei"],
+  HUF:["🇭🇺","Vengriya forinti","Венгерский форинт","Hungarian Forint","Ft"],
+  BGN:["🇧🇬","Bolgariya levi","Болгарский лев","Bulgarian Lev","лв"],
+  ISK:["🇮🇸","Islandiya kronasi","Исландская крона","Icelandic Krona","kr"],
+  TWD:["🇹🇼","Tayvan dollari","Тайваньский доллар","Taiwan Dollar","$"]
+};
+const POPULAR_CODES = ["USD","EUR","GBP","RUB","UZS","AED","TRY","CNY"];
+const HISTORY_CAPABLE = new Set(["USD","EUR","GBP","JPY","CHF","AUD","CAD","NZD","SEK","NOK","DKK","PLN","CZK","HUF","RON","BGN","ISK","TRY","ZAR","MXN","BRL","INR","IDR","PHP","THB","MYR","KRW","SGD","HKD","CNY"]);
+
+function curName(code){
+  const c = CUR[code]; if(!c) return code;
+  const idx = LANG==='uz'?1:(LANG==='ru'?2:3);
+  return c[idx];
+}
+function curFlag(code){ return (CUR[code]||["🏳️"])[0]; }
+function curSymbol(code){ return (CUR[code]||[,,,,''])[4]||''; }
+
+/* ================= state ================= */
+const state = {
+  theme: 'dark',
+  from: 'USD',
+  to: 'UZS',
+  amount: 100,
+  rates: {},        // code -> value per 1 USD
+  favorites: new Set(['USD','EUR','UZS','RUB']),
+  range: '7D',
+  chart: null,
+  lastRate: null
+};
+
+/* ================= helpers ================= */
+function fmt(n, maxDigits){
+  if(n===undefined||n===null||isNaN(n)) return '—';
+  const digits = maxDigits!==undefined?maxDigits:(Math.abs(n)>=1000?2:(Math.abs(n)>=1?4:6));
+  return Number(n).toLocaleString('en-US',{maximumFractionDigits:digits});
+}
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* ================= dropdowns ================= */
+function buildDropdownList(container, side){
+  container.innerHTML = '';
+  const codes = Object.keys(CUR).sort((a,b)=>{
+    const fa = state.favorites.has(a), fb = state.favorites.has(b);
+    if(fa!==fb) return fa? -1: 1;
+    return curName(a).localeCompare(curName(b));
+  });
+  codes.forEach(code=>{
+    const row = document.createElement('div');
+    row.className = 'dd-item';
+    row.dataset.code = code;
+    row.innerHTML = `<span class="flag">${curFlag(code)}</span>
+      <span class="code">${code}</span>
+      <span class="name">${curName(code)}</span>
+      <span class="star ${state.favorites.has(code)?'active':''}" data-star="${code}">★</span>`;
+    row.addEventListener('click', (e)=>{
+      if(e.target.dataset.star){
+        e.stopPropagation();
+        toggleFavorite(code);
+        return;
+      }
+      selectCurrency(side, code);
+    });
+    container.appendChild(row);
+  });
+}
+function toggleFavorite(code){
+  if(state.favorites.has(code)) state.favorites.delete(code);
+  else state.favorites.add(code);
+  buildDropdownList(document.getElementById('listFrom'),'from');
+  buildDropdownList(document.getElementById('listTo'),'to');
+  renderPopular();
+}
+function selectCurrency(side, code){
+  state[side] = code;
+  renderCurButtons();
+  closeDropdowns();
+  convert();
+  loadHistory();
+}
+function renderCurButtons(){
+  document.getElementById('btnFrom').innerHTML = `<span class="flag">${curFlag(state.from)}</span> ${state.from} <span class="chev">▾</span>`;
+  document.getElementById('btnTo').innerHTML = `<span class="flag">${curFlag(state.to)}</span> ${state.to} <span class="chev">▾</span>`;
+}
+function closeDropdowns(){
+  document.getElementById('ddFrom').classList.remove('open');
+  document.getElementById('ddTo').classList.remove('open');
+}
+document.addEventListener('click', (e)=>{
+  if(!document.getElementById('ddFromWrap').contains(e.target)) document.getElementById('ddFrom').classList.remove('open');
+  if(!document.getElementById('ddToWrap').contains(e.target)) document.getElementById('ddTo').classList.remove('open');
+});
+document.getElementById('btnFrom').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('ddTo').classList.remove('open');
+  document.getElementById('ddFrom').classList.toggle('open');
+});
+document.getElementById('btnTo').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('ddFrom').classList.remove('open');
+  document.getElementById('ddTo').classList.toggle('open');
+});
+document.getElementById('searchFrom').addEventListener('input', (e)=>filterList('listFrom', e.target.value));
+document.getElementById('searchTo').addEventListener('input', (e)=>filterList('listTo', e.target.value));
+function filterList(listId, query){
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll('#'+listId+' .dd-item').forEach(row=>{
+    const code = row.dataset.code;
+    const hay = (code+' '+curName(code)+' '+curFlag(code)).toLowerCase();
+    row.style.display = hay.includes(q) ? 'flex' : 'none';
+  });
+}
+
+/* ================= convert ================= */
+function convert(){
+  const amt = parseFloat(document.getElementById('amountFrom').value.replace(/,/g,'')) || 0;
+  state.amount = amt;
+  const rf = state.rates[state.from], rt = state.rates[state.to];
+  const statusEl = document.getElementById('statusLine');
+
+  if(!rf || !rt){
+    document.getElementById('amountTo').value = '0';
+    document.getElementById('rateMain').textContent = '—';
+    return;
+  }
+  const rate = rt / rf;
+  const result = amt * rate;
+  document.getElementById('amountTo').value = fmt(result);
+
+  const trendArrow = state.lastRate!==null ? (rate>state.lastRate? ' <span style="color:var(--green)">▲</span>' : (rate<state.lastRate? ' <span style="color:var(--red)">▼</span>' : '')) : '';
+  state.lastRate = rate;
+
+  document.getElementById('rateMain').innerHTML =
+    `1 ${state.from} = <b>${fmt(rate)}</b> ${state.to}${trendArrow}`;
+  statusEl.classList.remove('err');
+  statusEl.textContent = t('updated') + ': ' + new Date().toLocaleTimeString();
+}
+
+/* ================= fetch rates ================= */
+async function fetchRates(){
+  const statusEl = document.getElementById('statusLine');
+  try{
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    if(!data.rates) throw new Error('no rates');
+    state.rates = data.rates;
+    state.rates.USD = 1;
+    convert();
+    renderPopular();
+    buildTicker();
+  }catch(err){
+    statusEl.textContent = t('rateErr');
+    statusEl.classList.add('err');
+  }
+}
+
+/* ================= ticker ================= */
+function buildTicker(){
+  const codes = ["EUR","GBP","JPY","RUB","TRY","AED","CNY","UZS","KZT","INR"].filter(c=>state.rates[c]);
+  let html = '';
+  codes.forEach(c=>{
+    const dir = Math.random()>0.5?'up':'down';
+    html += `<span class="${dir}">USD/${c} <b>${fmt(state.rates[c])}</b> ${dir==='up'?'▲':'▼'}</span>`;
+  });
+  document.getElementById('ticker').innerHTML = html+html;
+}
+
+/* ================= popular grid ================= */
+function renderPopular(){
+  const grid = document.getElementById('popularGrid');
+  grid.innerHTML = '';
+  const pairs = [];
+  POPULAR_CODES.forEach(c=>{ if(c!=='USD') pairs.push(['USD',c]); });
+  pairs.push(['EUR','UZS']);
+  pairs.forEach(([from,to])=>{
+    if(!state.rates[from]||!state.rates[to]) return;
+    const rate = state.rates[to]/state.rates[from];
+    const card = document.createElement('div');
+    card.className = 'pop-card glass';
+    const dir = Math.random()>0.5?'up':'down';
+    card.innerHTML = `<div class="pop-top"><span>${curFlag(from)} ${from} → ${curFlag(to)} ${to}</span></div>
+      <div class="pop-val">${fmt(rate)}</div>
+      <div class="pop-trend ${dir}">${dir==='up'?'▲':'▼'} ${(Math.random()*0.8).toFixed(2)}%</div>`;
+    card.addEventListener('click', ()=>{
+      state.from = from; state.to = to;
+      renderCurButtons(); convert(); loadHistory();
+      document.querySelector('.converter').scrollIntoView({behavior:'smooth', block:'center'});
+    });
+    grid.appendChild(card);
+  });
+}
+
+/* ================= chart ================= */
+const RANGES = [
+  {key:'7D', label:'7D', days:7},
+  {key:'30D', label:'30D', days:30},
+  {key:'90D', label:'90D', days:90},
+  {key:'1Y', label:'1Y', days:365}
+];
+function renderRangeTabs(){
+  const wrap = document.getElementById('rangeTabs');
+  wrap.innerHTML = '';
+  RANGES.forEach(r=>{
+    const btn = document.createElement('button');
+    btn.className = 'range-tab' + (r.key===state.range?' active':'');
+    btn.textContent = r.label;
+    btn.addEventListener('click', ()=>{
+      state.range = r.key;
+      renderRangeTabs();
+      loadHistory();
+    });
+    wrap.appendChild(btn);
+  });
+}
+async function loadHistory(){
+  const canvas = document.getElementById('rateChart');
+  const statusEl = document.getElementById('statusLine');
+  if(!HISTORY_CAPABLE.has(state.from) || !HISTORY_CAPABLE.has(state.to)){
+    if(state.chart){ state.chart.destroy(); state.chart = null; }
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-dim');
+    ctx.font = '13px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(t('noHistory'), canvas.width/2, canvas.height/2);
+    return;
+  }
+  const r = RANGES.find(x=>x.key===state.range) || RANGES[0];
+  const end = new Date();
+  const start = new Date(); start.setDate(end.getDate()-r.days);
+  const fmtDate = d => d.toISOString().slice(0,10);
+  try{
+    const url = `https://api.frankfurter.app/${fmtDate(start)}..${fmtDate(end)}?from=${state.from}&to=${state.to}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const labels = Object.keys(data.rates).sort();
+    const values = labels.map(d=>data.rates[d][state.to]);
+    drawChart(labels, values);
+  }catch(err){
+    // fail quietly, keep converter working
+  }
+}
+function drawChart(labels, values){
+  const ctx = document.getElementById('rateChart').getContext('2d');
+  if(state.chart) state.chart.destroy();
+  const grad = ctx.createLinearGradient(0,0,0,280);
+  grad.addColorStop(0, 'rgba(79,140,255,0.35)');
+  grad.addColorStop(1, 'rgba(79,140,255,0)');
+  state.chart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{
+      data: values, borderColor:'#4f8cff', borderWidth:2.5,
+      backgroundColor: grad, fill:true, tension:0.35, pointRadius:0,
+      pointHoverRadius:5, pointHoverBackgroundColor:'#9b6bff'
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        backgroundColor:'#14161f', titleColor:'#fff', bodyColor:'#fff',
+        borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10
+      }},
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#8b93a7', maxTicksLimit:6, font:{family:'JetBrains Mono', size:10} } },
+        y:{ grid:{color:'rgba(255,255,255,0.06)'}, ticks:{ color:'#8b93a7', font:{family:'JetBrains Mono', size:10} } }
+      },
+      animation:{ duration:700, easing:'easeOutQuart' }
+    }
+  });
+}
+
+/* ================= swap / copy / share ================= */
+document.getElementById('swapBtn').addEventListener('click', ()=>{
+  const btn = document.getElementById('swapBtn');
+  btn.classList.add('spin');
+  setTimeout(()=>btn.classList.remove('spin'), 400);
+  [state.from, state.to] = [state.to, state.from];
+  renderCurButtons(); convert(); loadHistory();
+});
+document.getElementById('amountFrom').addEventListener('input', convert);
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const text = `${document.getElementById('amountFrom').value} ${state.from} = ${document.getElementById('amountTo').value} ${state.to}`;
+  navigator.clipboard?.writeText(text).then(()=>showToast(t('copied'))).catch(()=>showToast(t('shareFail')));
+});
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const text = `${document.getElementById('amountFrom').value} ${state.from} = ${document.getElementById('amountTo').value} ${state.to}`;
+  if(navigator.share){
+    try{ await navigator.share({ text, title:'Kurs Pro' }); }catch(e){}
+  } else {
+    navigator.clipboard?.writeText(text);
+    showToast(t('copied'));
+  }
+});
+
+/* ================= theme ================= */
+function applyTheme(){
+  document.body.setAttribute('data-theme', state.theme);
+  document.getElementById('themeIcon').textContent = state.theme==='dark' ? '🌙' : '☀️';
+}
+document.getElementById('themeBtn').addEventListener('click', ()=>{
+  state.theme = state.theme==='dark' ? 'light' : 'dark';
+  applyTheme();
+});
+
+/* ================= language ================= */
+document.getElementById('langSelect').addEventListener('change', (e)=>{
+  LANG = e.target.value;
+  applyI18n();
+  renderCurButtons();
+  buildDropdownList(document.getElementById('listFrom'),'from');
+  buildDropdownList(document.getElementById('listTo'),'to');
+  renderPopular();
+  convert();
+});
+
+/* ================= calculator ================= */
+const calcState = { display:'0', prev:null, op:null, waiting:false };
+const CALC_KEYS = ['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','=','='];
+function renderCalc(){
+  const grid = document.getElementById('calcGrid');
+  grid.innerHTML = '';
+  CALC_KEYS.forEach((k, i)=>{
+    if(i===19) return; // skip duplicate placeholder for span
+    const btn = document.createElement('button');
+    btn.className = 'calc-btn' + (['÷','×','−','+','%'].includes(k)?' op':'') + (k==='='?' eq':'');
+    btn.textContent = k;
+    if(k==='=') btn.style.gridColumn='span 2';
+    btn.addEventListener('click', ()=>calcPress(k));
+    grid.appendChild(btn);
+  });
+}
+function calcPress(k){
+  const d = calcState;
+  if(k==='C'){ d.display='0'; d.prev=null; d.op=null; d.waiting=false; }
+  else if(k==='⌫'){ d.display = d.display.length>1 ? d.display.slice(0,-1) : '0'; }
+  else if(k==='%'){ d.display = String(parseFloat(d.display)/100); }
+  else if(['÷','×','−','+'].includes(k)){
+    if(d.prev!==null && !d.waiting){ calcPress('='); }
+    d.prev = parseFloat(d.display); d.op = k; d.waiting = true;
+  }
+  else if(k==='='){
+    if(d.op && d.prev!==null){
+      const cur = parseFloat(d.display);
+      let res = cur;
+      if(d.op==='÷') res = d.prev/cur;
+      else if(d.op==='×') res = d.prev*cur;
+      else if(d.op==='−') res = d.prev-cur;
+      else if(d.op==='+') res = d.prev+cur;
+      d.display = String(Math.round(res*1e8)/1e8);
+      d.op=null; d.prev=null; d.waiting=false;
+    }
+  }
+  else if(k==='.'){
+    if(d.waiting){ d.display='0.'; d.waiting=false; }
+    else if(!d.display.includes('.')) d.display += '.';
+  }
+  else{ // digit
+    if(d.waiting || d.display==='0'){ d.display = k; d.waiting=false; }
+    else d.display += k;
+  }
+  document.getElementById('calcDisplay').textContent = d.display;
+}
+function openCalc(){ document.getElementById('calcOverlay').classList.add('open'); }
+function closeCalc(){ document.getElementById('calcOverlay').classList.remove('open'); }
+document.getElementById('fabCalc').addEventListener('click', openCalc);
+document.getElementById('calcOpenBtn').addEventListener('click', openCalc);
+document.getElementById('calcClose').addEventListener('click', closeCalc);
+document.getElementById('calcOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='calcOverlay') closeCalc();
+});
+
+/* ================= init ================= */
+function init(){
+  applyI18n();
+  applyTheme();
+  renderCurButtons();
+  buildDropdownList(document.getElementById('listFrom'),'from');
+  buildDropdownList(document.getElementById('listTo'),'to');
+  renderRangeTabs();
+  renderCalc();
+  fetchRates();
+  loadHistory();
+  setInterval(fetchRates, 60000);
+}
+init();
+
+})();
+</script>
+
+</body>
+</html>
